@@ -21,17 +21,17 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // Configure CORS
+var allowedOrigins = builder.Configuration.GetSection("CorsOrigins").Get<string[]>() ?? new[] { "http://localhost:4200" };
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowReact", policy =>
+    options.AddPolicy("AllowDev", policy =>
     {
-        policy.WithOrigins("http://localhost:3000")
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
     });
 });
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
@@ -46,12 +46,12 @@ if (app.Environment.IsDevelopment())
 }
 
 // El orden es importante: CORS debe ir antes de Authorization y endpoints
-app.UseCors("AllowReact");
+
+app.UseCors("AllowDev");
+app.MapControllers().RequireCors("AllowDev");
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
 
-// Asegurarse de que los controladores manejen CORS
-app.MapControllers().RequireCors("AllowReact");
 
 app.Run();
