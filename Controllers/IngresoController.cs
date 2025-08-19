@@ -10,6 +10,8 @@ namespace ArtServiceApi.Controllers
     [Route("api/[controller]")]
     public class IngresoController : ControllerBase
     {
+       
+
         // Datos mock in-memory (simulando BD)
         private static List<ServicioMock> _servicios = new List<ServicioMock>();
         private static List<VehiculoMock> _vehiculos = new List<VehiculoMock>
@@ -43,6 +45,7 @@ namespace ArtServiceApi.Controllers
         {
             return Ok(new { JsonRetono = _unidades }); // Mock
         }
+
 
         [HttpPost("ListarTipoServicioSelect")]
         public IActionResult ListarTipoServicioSelect([FromBody] TipoRequest request)
