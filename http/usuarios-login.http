@@ -1,0 +1,9 @@
+# For more info on HTTP files go to https://aka.ms/vs/httpfile
+# Prueba de login de usuario
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "userName": "cperez",
+  "password": "QQ!!qq11"
+}

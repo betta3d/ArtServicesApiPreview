@@ -1,0 +1,12 @@
+# For more info on HTTP files go to https://aka.ms/vs/httpfile
+
+POST http://localhost:5000/api/usuarios
+Content-Type: application/json
+
+{
+  "userName": "cperez",
+  "email": "claudio@betta.cl",
+  "password": "QQ!!qq11",
+  "nombreCompleto": "Usuario Admin",
+  "fechaNacimiento": "1979-09-19"
+}

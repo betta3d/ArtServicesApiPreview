@@ -3,6 +3,18 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using ArtServiceApi.Domain.Context;
+using ArtServiceApi.Domain.Entidades;
+using ArtServiceApi.Domain.Interfaces;
+using ArtServiceApi.Repositories.Implementaciones;
+using ArtServiceApi.Services.Interfaces;
+using ArtServiceApi.Services.Implementaciones;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +22,45 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
+
+// Configuración de DbContext para Identity
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Inyección de dependencias
+builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+
+builder.Services.AddIdentity<Usuario, IdentityRole>(options =>
+{
+    options.SignIn.RequireConfirmedEmail = false; // Requiere email confirmado para login
+    // Puedes agregar otras opciones aquí si lo necesitas
+})
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders();
+
+// Configuración de JWT
+var jwtSettings = builder.Configuration.GetSection("Jwt");
+var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtSettings["Issuer"],
+            ValidAudience = jwtSettings["Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(key)
+        };
+    });
 // Configure Swagger
 builder.Services.AddSwaggerGen(c =>
 {
@@ -50,7 +101,9 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowDev");
 app.MapControllers().RequireCors("AllowDev");
 
+
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 
 
